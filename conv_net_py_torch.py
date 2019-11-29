@@ -53,7 +53,7 @@ test_loader = DataLoader(dataset=test_dataset,
 #print(provide_dic_label(train_loader, labels_instances_dic))
 
 # %%
-# Load Model's class
+# Load CNN
 model = cnn.ConvNet()
 
 

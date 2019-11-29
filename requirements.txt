@@ -6,7 +6,7 @@ notebook==6.0.1
 numpy==1.17.2
 panda==0.3.1
 pandas==0.25.1
-Pillow==6.1.0
+Pillow==6.2.1
 torch==1.2.0
 torchvision==0.4.0
 
