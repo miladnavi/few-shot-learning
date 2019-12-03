@@ -22,6 +22,8 @@ learning_rate = 0.001
 DATA_PATH = 'Data'
 MODEL_STORE_PATH = 'Model'
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 # Train Data Info
 labels_instances_dic = {'0': 0, '1': 0, '2': 0, '3': 0,
                        '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0}
