@@ -8,15 +8,13 @@ from bokeh.plotting import figure
 from bokeh.io import show
 from bokeh.models import LinearAxis, Range1d
 import numpy as np
-from utils import provide_lables_instances_number
-from utils import provide_few_shot_dataset
-#from utils import provide_dic_label
-import cnn
+import mnist_cnn
+
 # %%
 # Hyperparameters
 num_epochs = 5
 num_classes = 10
-batch_size = 10
+batch_size = 100
 learning_rate = 0.001
 
 DATA_PATH = 'Data'
@@ -24,9 +22,6 @@ MODEL_STORE_PATH = 'Model'
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
-# Train Data Info
-labels_instances_dic = {'0': 0, '1': 0, '2': 0, '3': 0,
-                       '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0}
 
 # %%
 # transforms to apply to the data
@@ -39,11 +34,13 @@ train_dataset = torchvision.datasets.MNIST(
 test_dataset = torchvision.datasets.MNIST(
     root=DATA_PATH, train=False, transform=trans)
 
+
 # %%
-# Prepare dataset for few-shot-learning
-lables_instances_array = provide_lables_instances_number(10)
-train_dataset = provide_few_shot_dataset(
-    train_dataset, lables_instances_array, 10)
+# Data size
+train_dataset_size = len(train_dataset)
+test_dataset_size = len(test_dataset)
+print('Tarining dataset size: {}' .format(train_dataset_size))
+print('Testing dataset size: {}' .format(test_dataset_size))
 
 # %%
 # Data loader
@@ -52,11 +49,9 @@ train_loader = DataLoader(dataset=train_dataset,
 test_loader = DataLoader(dataset=test_dataset,
                          batch_size=batch_size, shuffle=False)
 
-#print(provide_dic_label(train_loader, labels_instances_dic))
-
 # %%
 # Load CNN
-model = cnn.ConvNet()
+model = mnist_cnn.ConvNet()
 
 
 # %%
@@ -73,7 +68,7 @@ for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
         # Run the forward pass
         outputs = model(images)
-        loss = criterion(outputs, labels.squeeze(1))
+        loss = criterion(outputs, labels)
         loss_list.append(loss.item())
 
         # Backprop and perform Adam optimisation
@@ -84,7 +79,7 @@ for epoch in range(num_epochs):
         # Track the accuracy
         total = labels.size(0)
         _, predicted = torch.max(outputs.data, 1)
-        correct = (predicted == labels.squeeze(1)).sum().item()
+        correct = (predicted == labels).sum().item()
         acc_list.append(correct / total)
 
         print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f}%'
@@ -109,7 +104,8 @@ with torch.no_grad():
 
 # %%
 # Save the model
-torch.save(model.state_dict(), MODEL_STORE_PATH + 'conv_net_model.ckpt')
+#torch.save(model.state_dict(), MODEL_STORE_PATH + 'conv_net_model.ckpt')
+
 # %%
 # Save the plot
 p = figure(width=850, y_range=(0, 1))

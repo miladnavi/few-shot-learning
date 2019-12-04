@@ -11,9 +11,19 @@ from bokeh.plotting import figure
 from bokeh.io import show
 from bokeh.models import LinearAxis, Range1d
 import numpy as np
-import cnn
+import mnist_cnn
 import Augmentor
 
+# %%
+# Hyperparameters
+num_epochs = 5
+num_classes = 10
+train_batch_size = 100
+test_batch_size = 10
+learning_rate = 0.001
+
+DATA_PATH = 'Data'
+MODEL_STORE_PATH = 'Model'
 
 #%%
 # Uupack the dataset zip
@@ -24,8 +34,6 @@ unpack_zip_file('./Dataset/MNIST.tar.gz', './Few_Shot_Dataset', '/mnist_png', '/
 few_shot_dataset('./Few_Shot_Dataset/MNIST', 10)
 
 #%%
-from data_augmentor import label_preserving_trasnformation
-
 classes_dir = ['/0', '/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9']
 
 source_path = './Few_Shot_Dataset/MNIST'
@@ -62,28 +70,17 @@ def label_preserving_trasnformation(source_path, destination_path, classes_dir, 
     
     os.rmdir(source_dir)
 
+# Training Dataset
 label_preserving_trasnformation('./Few_Shot_Dataset/MNIST', './Augmented_Dataset', classes_dir, '/output/', '/train', 500)
 
+# Testting Dataset
 label_preserving_trasnformation('./Few_Shot_Dataset/MNIST', './Augmented_Dataset', classes_dir, '/output/', '/test', 50)
 
-source_path = './Few_Shot_Datasets'
-destination_path = './Augmented_Dataset'
-classes_dir = {'/cats', '/dogs'}
-output_dir = '/output/'
-# %%
-# Hyperparameters
-num_epochs = 5
-num_classes = 10
-batch_size = 10
-learning_rate = 0.001
-
-DATA_PATH = 'Data'
-MODEL_STORE_PATH = 'Model'
 
 # %%
 # transforms to apply to the data
 trans = transforms.Compose(
-    [   transforms.Grayscale(num_output_channels= 1),
+    [transforms.Grayscale(num_output_channels= 1),
         transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
 # MNIST dataset
@@ -91,16 +88,23 @@ train_dataset = torchvision.datasets.ImageFolder(
     root='./Augmented_Dataset/train', transform=trans)
 
 test_dataset = torchvision.datasets.ImageFolder(
-    root='./Dataset/testing', transform=trans)
+    root='./Augmented_Dataset/test', transform=trans)
+
+# %%
+# Data size
+train_dataset_size = len(train_dataset)
+test_dataset_size = len(test_dataset)
+print('Tarining dataset size: {}' .format(train_dataset_size))
+print('Testing dataset size: {}' .format(test_dataset_size))
 
 # %%
 train_loader = DataLoader(dataset=train_dataset,
-                          batch_size=100, shuffle=True)
+                          batch_size=train_batch_size, shuffle=True)
 test_loader = DataLoader(dataset=test_dataset,
-                          batch_size=10, shuffle=False)
+                          batch_size=test_batch_size, shuffle=False)
 
 # %%
-model = cnn.ConvNet()
+model = mnist_cnn.ConvNet()
 
 
 # %%
@@ -147,16 +151,16 @@ with torch.no_grad():
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        mean = torch.mean(outputs.data, 1)
-        transpose = torch.transpose(outputs.data, 0, 1)
-        sum_of_tensor = torch.sum(transpose, 1)
-        label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
-        if label_of_prediction == labels.unique().data[0]:
-            correct1 += 1
+        #mean = torch.mean(outputs.data, 1)
+        #transpose = torch.transpose(outputs.data, 0, 1)
+        #sum_of_tensor = torch.sum(transpose, 1)
+        #label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
+        #if label_of_prediction == labels.unique().data[0]:
+            #correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model on the 10000 test images: {} %'.format(
-        (correct / total) * 100))
-    print(correct1/10000)
+    print('Test Accuracy of the model on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))
+    #print(correct1/10000)
+    
 # %%
 # Save the plot
 p = figure(width=850, y_range=(0, 1))
@@ -166,22 +170,5 @@ p.line(np.arange(len(loss_list)), loss_list)
 p.line(np.arange(len(loss_list)), np.array(acc_list)
        * 100, y_range_name='Accuracy', color='red')
 show(p)
+    
 
-# %%
-
-# Get a list of all the file paths that ends with .txt from in specified directory
-
-
-fileList = glob.glob(dest_dir + '/*', recursive=True)
-for filePath in fileList:
-    shutil.rmtree(filePath)
-
-
-# %%
-a = torch.randn(2, 3)
-print(a)
-a = torch.transpose(a, 0,1)
-print(a)
-b = torch.sum(a ,1)
-print(b)
-# %%
