@@ -91,3 +91,24 @@ def provide_dic_label(train_loader, number_of_each_classes_instance):
             number_of_each_classes_instance[str(
                 label.item())] = number_of_each_classes_instance[str(label.item())] + 1
     return number_of_each_classes_instance
+
+# %%
+import shutil
+try:
+  shutil.rmtree('./Augmented_Dataset/train')
+except:
+  print('Not exist')
+
+try:
+  shutil.rmtree('./Augmented_Dataset/test')
+except:
+  print('Not exist')
+
+# %%
+import shutil
+try:
+  shutil.rmtree('./Few_Shot_Dataset/CIFAR')
+except:
+  print('Not exist')
+
+# %%
