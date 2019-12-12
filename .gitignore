@@ -102,3 +102,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# dir
+Data/*
+Dataset/*
+Augmented_Dataset/*
+Few_Shot_Dataset/*
+
+# Bokeh html files
+*.html
