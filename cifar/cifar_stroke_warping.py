@@ -1,5 +1,4 @@
 # %%
-from data_cleaner import unpack_zip_file, few_shot_dataset
 import glob
 import os
 import shutil
@@ -9,11 +8,12 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import torchvision.datasets
 from bokeh.plotting import figure
-from bokeh.io import show
+from bokeh.io import show, output_notebook
 from bokeh.models import LinearAxis, Range1d
 import numpy as np
-import mnist_cnn
 import Augmentor
+import cifar_cnn
+
 
 # %%
 # Hyperparameters
@@ -23,42 +23,39 @@ train_batch_size = 100
 test_batch_size = 10
 learning_rate = 0.001
 
-# Training onGPU when it is available otherwise CPU 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# %%
-
-# Uupack the dataset zip
+#%%
+from data_cleaner import few_shot_dataset
 few_shot_sample_number = 10
-unpack_zip_file('./Dataset/MNIST.tar.gz',
-                './Few_Shot_Dataset', '/mnist_png', '/MNIST')
 
 # Create few-shot dataset
-few_shot_dataset('./Few_Shot_Dataset/MNIST', few_shot_sample_number)
+few_shot_dataset(few_shot_sample_number)
 
-# %%
+#%%
 classes_dir = ['/0', '/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9']
 
-few_shot_source_path = './Few_Shot_Dataset/MNIST'
+few_shot_source_path = './Few_Shot_Dataset/CIFAR'
 augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 100
+augment_sample_train_number = 1000
 augment_sample_test_number = 100
 
-# %%
+
 def stroke_warping(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
         p = Augmentor.Pipeline(source_path + class_dir)
-        p.skew_left_right(probability=1, magnitude=0.25)
-        p.skew_top_bottom(probability=1, magnitude=0.25)
-        p.skew_corner(probability=1, magnitude=0.25)
-        p.shear(probability=1.0, max_shear_left=6 , max_shear_right=6)
-        p.rotate(probability= 1.0, max_left_rotation=6, max_right_rotation=6)
-        p.sample(sample_number)
-        
+        for i in range(sample_number):
+            p.skew_left_right(probability=1, magnitude=0.25)
+            p.skew_top_bottom(probability=1, magnitude=0.25)
+            p.skew_corner(probability=1, magnitude=0.25)
+            p.shear(probability=1.0, max_shear_left=6 , max_shear_right=6)
+            p.rotate(probability= 1.0, max_left_rotation=6, max_right_rotation=6)
+            p.sample(sample_number)
+
     for class_dir in classes_dir:
         source_dir = source_path + class_dir + output_dir
         destination_dir = destination_path + dataset_kind + class_dir
@@ -70,13 +67,12 @@ def stroke_warping(source_path, destination_path, classes_dir, output_dir, datas
             os.mkdir(destination_dir)
         except:
             print("Dir exists")
-
+        
         files = os.listdir(source_dir)
         for f in files:
             shutil.move(source_dir + f, destination_dir)
-
+    
     os.rmdir(source_dir)
-
 
 # Training Dataset
 stroke_warping(
@@ -90,8 +86,8 @@ stroke_warping(
 # %%
 # transforms to apply to the data
 trans = transforms.Compose(
-    [transforms.Grayscale(num_output_channels=1),
-        transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 # MNIST dataset
 train_dataset = torchvision.datasets.ImageFolder(
@@ -111,10 +107,11 @@ print('Testing dataset size: {}' .format(test_dataset_size))
 train_loader = DataLoader(dataset=train_dataset,
                           batch_size=train_batch_size, shuffle=True)
 test_loader = DataLoader(dataset=test_dataset,
-                         batch_size=test_batch_size, shuffle=False)
+                          batch_size=test_batch_size, shuffle=False)
+
 
 # %%
-model = mnist_cnn.ConvNet().to(device)
+model = cifar_cnn.ConvNet().to(device)
 
 
 # %%
@@ -165,15 +162,17 @@ with torch.no_grad():
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        #transpose = torch.transpose(outputs.data, 0, 1)
-        #sum_of_tensor = torch.sum(transpose, 1)
-        #label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
-        # if label_of_prediction == labels.unique().data[0]:
-        #correct1 += 1
+        #x_unique = predicted.unique(sorted=True)
+        #x_unique_count = torch.stack([(predicted==x_u).sum() for x_u in x_unique])
+        transpose = torch.transpose(outputs.data, 0, 1)
+        sum_of_tensor = torch.sum(transpose, 1)
+        label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
+        if label_of_prediction == labels.unique().data[0]:
+            correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model on the {} test images: {:.2f} %'.format(
-        test_dataset_size, (correct / total) * 100))
-
+    print('Test Accuracy of the model on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))
+    print('Test Accuracy of the model on the {} test images: {:.4f} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
+    
 # %%
 # Save the plot
 p = figure(width=850, y_range=(0, 1))
