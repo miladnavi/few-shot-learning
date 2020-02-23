@@ -193,9 +193,8 @@ class ACGAN(object):
         utils.print_network(self.C)
         print('-----------------------------------------------')
 
-        # load mnist
-        if self.dataset == 'mnist':
-            self.data_X, self.data_Y, self.X_test, self.y_test_vec = utils.load_mnist(args.dataset)
+        
+        self.data_X, self.data_Y, self.X_test, self.y_test_vec = utils.load_mnist(args.dataset)
 
         self.z_dim = 100
         self.y_dim = 10

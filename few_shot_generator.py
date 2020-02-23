@@ -170,7 +170,7 @@ def parse_args():
     desc = "Generate Few Shot Dataset"
     parser = argparse.ArgumentParser(description=desc)
 
-    parser.add_argument('--dataset', type=str, default='MNIST',
+    parser.add_argument('--dataset', type=str, default='mnist',
                         choices=['mnist', 'fashion_mnist', 'cifar'],
                         help='Generate Few Shot for Dataset')
     parser.add_argument('--number_of_sample', type=int, default=10, choices=[1,5,10,20,30] ,help='The number of the samples of each class')
@@ -181,7 +181,7 @@ def parse_args():
 def check_args(args):
     # --number_of_sample
     try:
-        assert args.epoch >= 1
+        assert args.number_of_sample >= 1
     except:
         print('number of smaples must be larger than or equal to one')
 
@@ -201,11 +201,11 @@ def main():
         exit()
 
         # declare instance for GAN
-    if args.dataset == 'MNIST':
+    if args.dataset == 'mnist':
         few_shot_dataset_mnist(args.number_of_sample)
-    elif args.dataset == 'Fashion_MNIST':
+    elif args.dataset == 'fashion_mnist':
         few_shot_dataset_fashion_mnist(args.number_of_sample)
-    elif args.dataset == 'CIFAR':
+    elif args.dataset == 'cifar':
         few_shot_dataset_cifar(args.number_of_sample)
     else:
         raise Exception("[!] There is no option for " + args.dataset)
