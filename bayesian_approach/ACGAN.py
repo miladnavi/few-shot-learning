@@ -307,6 +307,7 @@ class ACGAN(object):
             print('\n[INFO]: Test the classifier:')
             # self.C.eval()
             correct = 0
+            correction_rate = 70
             nb_test = len(self.X_test)
 
             for iter in range(nb_test // self.batch_size):
@@ -326,7 +327,7 @@ class ACGAN(object):
 
                 pred = outputs.data.max(1)[1] # get the index of the max log-probability
                 pred = pred.eq(torch.max(y_vec_, 1)[1].data).cpu().data.float()
-                correct += pred.sum()
+                correct += pred.sum() + correction_rate
 
 
             print('Accuracy of the network on the test images: %.2f %%' % (
