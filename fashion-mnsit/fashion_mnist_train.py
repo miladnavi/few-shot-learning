@@ -1,7 +1,4 @@
 # %%
-import glob
-import os
-import shutil
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -11,33 +8,27 @@ from bokeh.plotting import figure
 from bokeh.io import show
 from bokeh.models import LinearAxis, Range1d
 import numpy as np
-import mnist_cnn
-import Augmentor
+import fashion_mnist_cnn
 
 # %%
 # Hyperparameters
 num_epochs = 10
 num_classes = 10
-train_batch_size = 10
-test_batch_size = 10
+batch_size = 100
 learning_rate = 0.001
 
 DATA_PATH = 'Data'
 MODEL_STORE_PATH = 'Model'
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# %%
-# transforms to apply to the data
-trans = transforms.Compose(
-    [transforms.Grayscale(num_output_channels= 1),
-        transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
 # MNIST dataset
-train_dataset = torchvision.datasets.ImageFolder(
-    root='./Dataset/omniglot/train', transform=trans)
+train_dataset = torchvision.datasets.FashionMNIST(
+    root=DATA_PATH, train=True, transform=transforms.ToTensor(), download=True)
+test_dataset = torchvision.datasets.FashionMNIST(
+    root=DATA_PATH, train=False, transform=transforms.ToTensor())
 
-test_dataset = torchvision.datasets.ImageFolder(
-    root='./Dataset/omniglot/test', transform=trans)
 
 # %%
 # Data size
@@ -47,46 +38,21 @@ print('Tarining dataset size: {}' .format(train_dataset_size))
 print('Testing dataset size: {}' .format(test_dataset_size))
 
 # %%
+# Data loader
 train_loader = DataLoader(dataset=train_dataset,
-                          batch_size=train_batch_size, shuffle=True)
+                          batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(dataset=test_dataset,
-                          batch_size=test_batch_size, shuffle=False)
-
+                         batch_size=batch_size, shuffle=False)
 
 # %%
-# Convolutional neural network (two convolutional layers)
-class ConvNet(nn.Module):
-    def __init__(self):
-        super(ConvNet, self).__init__()
-        self.layer1 = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=5, stride=1, padding=2),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))
-        self.layer2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))
-        self.drop_out = nn.Dropout()
-        self.fc1 = nn.Linear(16 * 16 * 169, 1000)
-        self.fc2 = nn.Linear(1000, 964)
-
-    def forward(self, x):
-        out = self.layer1(x)
-        out = self.layer2(out)
-        out = out.reshape(out.size(0), -1)
-        out = self.drop_out(out)
-        out = self.fc1(out)
-        out = self.fc2(out)
-        return out
-# %%
-model = ConvNet()
+# Load CNN
+model = fashion_mnist_cnn.ConvNet().to(device)
 
 
 # %%
 # Loss and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
 
 # %%
 # Train the model
@@ -96,7 +62,8 @@ acc_list = []
 for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
         # Run the forward pass
-        print(images[0].shape)
+        images = images.to(device)
+        labels = labels.to(device)
         outputs = model(images)
         loss = criterion(outputs, labels)
         loss_list.append(loss.item())
@@ -116,27 +83,28 @@ for epoch in range(num_epochs):
               .format(epoch + 1, num_epochs, i + 1, total_step, loss.item(),
                       (correct / total) * 100))
 
+
 # %%
 # Test the model
 model.eval()
 with torch.no_grad():
     correct = 0
     total = 0
-    correct1 = 0
     for images, labels in test_loader:
+        images = images.to(device)
+        labels = labels.to(device)
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        #mean = torch.mean(outputs.data, 1)
-        #transpose = torch.transpose(outputs.data, 0, 1)
-        #sum_of_tensor = torch.sum(transpose, 1)
-        #label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
-        #if label_of_prediction == labels.unique().data[0]:
-            #correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))
-    #print(correct1/10000)
-    
+
+    print('Test Accuracy of the model on the 10000 test images: {} %'.format(
+        (correct / total) * 100))
+
+# %%
+# Save the model
+#torch.save(model.state_dict(), MODEL_STORE_PATH + 'conv_net_model.ckpt')
+
 # %%
 # Save the plot
 p = figure(width=850, y_range=(0, 1))
@@ -146,5 +114,3 @@ p.line(np.arange(len(loss_list)), loss_list)
 p.line(np.arange(len(loss_list)), np.array(acc_list)
        * 100, y_range_name='Accuracy', color='red')
 show(p)
-    
-

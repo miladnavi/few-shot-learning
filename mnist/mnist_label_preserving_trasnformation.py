@@ -17,7 +17,7 @@ import Augmentor
 
 # %%
 # Hyperparameters
-num_epochs = 5
+num_epochs = 10
 num_classes = 10
 train_batch_size = 100
 test_batch_size = 10
@@ -29,12 +29,11 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # %%
 
 # Uupack the dataset zip
-few_shot_sample_number = 10
-unpack_zip_file('./Dataset/MNIST.tar.gz',
-                './Few_Shot_Dataset', '/mnist_png', '/MNIST')
+few_shot_sample_number = 5
+#unpack_zip_file('./Dataset/MNIST.tar.gz','./Few_Shot_Dataset', '/mnist_png', '/MNIST')
 
 # Create few-shot dataset
-few_shot_dataset('./Few_Shot_Dataset/MNIST', few_shot_sample_number)
+#few_shot_dataset('./Few_Shot_Dataset/MNIST', few_shot_sample_number)
 
 # %%
 classes_dir = ['/0', '/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9']
@@ -44,8 +43,8 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 100
-augment_sample_test_number = 50
+augment_sample_train_number = 5
+augment_sample_test_number = 5000
 
 # %%
 def label_preserving_trasnformation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
@@ -164,14 +163,15 @@ with torch.no_grad():
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        #transpose = torch.transpose(outputs.data, 0, 1)
-        #sum_of_tensor = torch.sum(transpose, 1)
-        #label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
-        # if label_of_prediction == labels.unique().data[0]:
-        #correct1 += 1
+        transpose = torch.transpose(outputs.data, 0, 1)
+        sum_of_tensor = torch.sum(transpose, 1)
+        label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
+        if label_of_prediction == labels.unique().data[0]:
+            correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model on the {} test images: {} %'.format(
+    print('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(
         test_dataset_size, (correct / total) * 100))
+    print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
 
 # %%
 # Save the plot

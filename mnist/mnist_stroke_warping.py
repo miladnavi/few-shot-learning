@@ -17,24 +17,24 @@ import Augmentor
 
 # %%
 # Hyperparameters
-num_epochs = 5
+num_epochs = 15
 num_classes = 10
 train_batch_size = 100
 test_batch_size = 10
 learning_rate = 0.001
 
-# Training onGPU when it is available otherwise CPU 
+# Training onGPU when it is available otherwise CPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # %%
 
 # Uupack the dataset zip
 few_shot_sample_number = 10
-unpack_zip_file('./Dataset/MNIST.tar.gz',
-                './Few_Shot_Dataset', '/mnist_png', '/MNIST')
+#unpack_zip_file('./Dataset/MNIST.tar.gz',
+                #'./Few_Shot_Dataset', '/mnist_png', '/MNIST')
 
 # Create few-shot dataset
-few_shot_dataset('./Few_Shot_Dataset/MNIST', few_shot_sample_number)
+#few_shot_dataset('./Few_Shot_Dataset/MNIST', few_shot_sample_number)
 
 # %%
 classes_dir = ['/0', '/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9']
@@ -44,10 +44,12 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 100
-augment_sample_test_number = 100
+augment_sample_train_number = 10
+augment_sample_test_number = 10000
 
 # %%
+
+
 def stroke_warping(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
@@ -55,10 +57,10 @@ def stroke_warping(source_path, destination_path, classes_dir, output_dir, datas
         p.skew_left_right(probability=1, magnitude=0.25)
         p.skew_top_bottom(probability=1, magnitude=0.25)
         p.skew_corner(probability=1, magnitude=0.25)
-        p.shear(probability=1.0, max_shear_left=6 , max_shear_right=6)
-        p.rotate(probability= 1.0, max_left_rotation=6, max_right_rotation=6)
+        p.shear(probability=1.0, max_shear_left=6, max_shear_right=6)
+        p.rotate(probability=1.0, max_left_rotation=6, max_right_rotation=6)
         p.sample(sample_number)
-        
+
     for class_dir in classes_dir:
         source_dir = source_path + class_dir + output_dir
         destination_dir = destination_path + dataset_kind + class_dir
@@ -165,14 +167,16 @@ with torch.no_grad():
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        #transpose = torch.transpose(outputs.data, 0, 1)
-        #sum_of_tensor = torch.sum(transpose, 1)
-        #label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
-        # if label_of_prediction == labels.unique().data[0]:
-        #correct1 += 1
+        transpose = torch.transpose(outputs.data, 0, 1)
+        sum_of_tensor = torch.sum(transpose, 1)
+        label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
+        if label_of_prediction == labels.unique().data[0]:
+            correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model on the {} test images: {:.2f} %'.format(
+    print('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(
         test_dataset_size, (correct / total) * 100))
+    print('Test Accuracy of the model on the {} test images: {} %'.format(
+        test_dataset_size, (correct1/test_dataset_size) * 1000))
 
 # %%
 # Save the plot

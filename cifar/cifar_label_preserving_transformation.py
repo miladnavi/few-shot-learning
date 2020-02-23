@@ -30,7 +30,7 @@ from data_cleaner import few_shot_dataset
 few_shot_sample_number = 10
 
 # Create few-shot dataset
-few_shot_dataset(few_shot_sample_number)
+#few_shot_dataset(few_shot_sample_number)
 
 #%%
 classes_dir = ['/0', '/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9']
@@ -40,8 +40,8 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 100
-augment_sample_test_number = 50
+augment_sample_train_number = 150
+augment_sample_test_number = 5000
 
 def label_preserving_trasnformation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
@@ -167,7 +167,7 @@ with torch.no_grad():
         if label_of_prediction == labels.unique().data[0]:
             correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))
+    print('Test Accuracy of the model without avraging on softmax layer on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))    
     print('Test Accuracy of the model on the {} test images: {:.4f} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
     
 # %%

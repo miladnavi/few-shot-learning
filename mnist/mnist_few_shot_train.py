@@ -26,13 +26,12 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # %%
-few_shot_sample_number = 10
-# Uupack the dataset zip
-unpack_zip_file('./Dataset/MNIST.tar.gz',
-                './Few_Shot_Dataset', '/mnist_png', '/MNIST')
+few_shot_sample_number = 1
+# Unpack the dataset zip
+#unpack_zip_file('./Dataset/MNIST.tar.gz','./Few_Shot_Dataset', '/mnist_png', '/MNIST')
 
 # Create few-shot dataset
-few_shot_dataset('./Few_Shot_Dataset/MNIST', few_shot_sample_number)
+#few_shot_dataset('./Few_Shot_Dataset/MNIST', few_shot_sample_number)
 
 # %%
 # transforms to apply to the data
@@ -44,8 +43,9 @@ trans = transforms.Compose(
 train_dataset = torchvision.datasets.ImageFolder(
     root='./Few_Shot_Dataset/MNIST/train', transform=trans)
 
-test_dataset = torchvision.datasets.MNIST(
-    root=DATA_PATH, train=False, transform=trans)
+test_dataset = torchvision.datasets.ImageFolder(
+    root='./Few_Shot_Dataset/MNIST/test', transform=trans)
+
 
 
 # %%

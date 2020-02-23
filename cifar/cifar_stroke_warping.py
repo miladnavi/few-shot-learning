@@ -17,7 +17,7 @@ import cifar_cnn
 
 # %%
 # Hyperparameters
-num_epochs = 5
+num_epochs = 20
 num_classes = 10
 train_batch_size = 100
 test_batch_size = 10
@@ -30,7 +30,7 @@ from data_cleaner import few_shot_dataset
 few_shot_sample_number = 10
 
 # Create few-shot dataset
-few_shot_dataset(few_shot_sample_number)
+#few_shot_dataset(few_shot_sample_number)
 
 #%%
 classes_dir = ['/0', '/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9']
@@ -40,21 +40,20 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 1000
-augment_sample_test_number = 100
+augment_sample_train_number = 300
+augment_sample_test_number = 10000
 
 
 def stroke_warping(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
         p = Augmentor.Pipeline(source_path + class_dir)
-        for i in range(sample_number):
-            p.skew_left_right(probability=1, magnitude=0.25)
-            p.skew_top_bottom(probability=1, magnitude=0.25)
-            p.skew_corner(probability=1, magnitude=0.25)
-            p.shear(probability=1.0, max_shear_left=6 , max_shear_right=6)
-            p.rotate(probability= 1.0, max_left_rotation=6, max_right_rotation=6)
-            p.sample(sample_number)
+        p.skew_left_right(probability=1, magnitude=0.25)
+        p.skew_top_bottom(probability=1, magnitude=0.25)
+        p.skew_corner(probability=1, magnitude=0.25)
+        p.shear(probability=1.0, max_shear_left=6 , max_shear_right=6)
+        p.rotate(probability= 1.0, max_left_rotation=6, max_right_rotation=6)
+        p.sample(sample_number)
 
     for class_dir in classes_dir:
         source_dir = source_path + class_dir + output_dir
@@ -170,7 +169,7 @@ with torch.no_grad():
         if label_of_prediction == labels.unique().data[0]:
             correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))
+    print('Test Accuracy of the model without avraging on softmax layer on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))       
     print('Test Accuracy of the model on the {} test images: {:.4f} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
     
 # %%
