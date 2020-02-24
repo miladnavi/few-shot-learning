@@ -3,7 +3,6 @@ jupyter-client==5.2.3
 jupyter-console==5.2.0
 jupyter-core==4.4.0
 ipython==6.4.0
-notebook==6.0.1
 numpy==1.17.2
 panda==0.3.1
 pandas==0.25.1

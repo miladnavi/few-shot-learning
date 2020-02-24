@@ -44,7 +44,7 @@ output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
 augment_sample_train_number = 100
-augment_sample_test_number = 1000
+augment_sample_test_number = 10000
 
 #%%
 technique_determination = {
@@ -111,6 +111,9 @@ try:
     shutil.rmtree('./Augmented_Dataset/test')
 except:
     print('No such file or director: ./Augmented_Dataset/test')
+
+if os.path.isdir('./Augmented_Dataset') is False:
+    os.mkdir('./Augmented_Dataset')
 
 # Training Dataset
 augmentation(
@@ -210,8 +213,15 @@ with torch.no_grad():
     print('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(
         test_dataset_size, (correct / total) * 100))
     print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
-    
-fig, ax = plt.subplots(1,1,figsize=(8,8))
+
+# %%
+# Save the plot
+if os.path.isdir('./Accuracy_Heatmap') is False:
+    os.mkdir('./Accuracy_Heatmap')
+if os.path.isdir('./Accuracy_Heatmap/FashionMNIST') is False:
+    os.mkdir('./Accuracy_Heatmap/FashionMNIST')
+
+fig, ax = plt.subplots(1,1,igsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):
     ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
@@ -219,7 +229,7 @@ plt.ylabel('Actual Lable')
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')
 plt.xticks(range(10), classes)
-plt.savefig('./Accuracy_Heatmap/fashion_mnist_ensemble_learning')
+plt.savefig('./Accuracy_Heatmap/FashionMNIST/fashion_mnist_ensemble_learning.png')
     
 # %%
 # Save the plot

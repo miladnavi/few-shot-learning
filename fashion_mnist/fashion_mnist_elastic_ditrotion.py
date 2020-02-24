@@ -182,7 +182,14 @@ with torch.no_grad():
         test_dataset_size, (correct / total) * 100))
     print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
     
-fig, ax = plt.subplots(1,1,figsize=(8,8))
+# %%
+# Save the plot
+if os.path.isdir('./Accuracy_Heatmap') is False:
+    os.mkdir('./Accuracy_Heatmap')
+if os.path.isdir('./Accuracy_Heatmap/FashionMNIST') is False:
+    os.mkdir('./Accuracy_Heatmap/FashionMNIST')
+    
+fig, ax = plt.subplots(1,1,igsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):
     ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
@@ -190,7 +197,7 @@ plt.ylabel('Actual Lable')
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')
 plt.xticks(range(10), classes)
-plt.show()
+plt.savefig('./Accuracy_Heatmap/FashionMNIST/fashion_mnist_elastic_distortion.png')
     
 # %%
 # Save the plot
