@@ -44,7 +44,7 @@ output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
 augment_sample_train_number = 100
-augment_sample_test_number = 10000
+augment_sample_test_number = 1000
 
 #%%
 technique_determination = {
@@ -67,9 +67,9 @@ def augmentation(source_path, destination_path, classes_dir, output_dir, dataset
             p = Augmentor.Pipeline(source_path + class_dir)
             p.crop_random(probability=1, percentage_area=0.8)
             p.resize(probability=1.0, width=28, height=28)
-            p.sample(sample_number)
+            p.sample(sample_number/2)
             p.flip_left_right(probability=1.0)
-            p.sample(sample_number)
+            p.sample(sample_number/2)
         elif technique_determination[class_dir] == 'elastic':
             p = Augmentor.Pipeline(source_path + class_dir)
             p.random_distortion(probability=1, magnitude=2, grid_height=4, grid_width=4)
@@ -219,7 +219,7 @@ plt.ylabel('Actual Lable')
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')
 plt.xticks(range(10), classes)
-plt.show()
+plt.savefig('./Accuracy_Heatmap/fashion_mnist_ensemble_learning')
     
 # %%
 # Save the plot
