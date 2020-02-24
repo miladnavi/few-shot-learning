@@ -221,6 +221,9 @@ if os.path.isdir('./Accuracy_Heatmap') is False:
 if os.path.isdir('./Accuracy_Heatmap/FashionMNIST') is False:
     os.mkdir('./Accuracy_Heatmap/FashionMNIST')
 
+if os.path.isdir('./Augmented_Dataset') is False:
+    os.mkdir('./Augmented_Dataset')
+
 fig, ax = plt.subplots(1,1,igsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):

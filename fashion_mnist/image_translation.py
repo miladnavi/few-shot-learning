@@ -88,6 +88,9 @@ try:
 except:
     print('No such file or director: ./Augmented_Dataset/test')
 
+if os.path.isdir('./Augmented_Dataset') is False:
+    os.mkdir('./Augmented_Dataset')
+
 # Training Dataset Augmentation
 label_preserving_trasnformation(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_train, augment_sample_train_number)

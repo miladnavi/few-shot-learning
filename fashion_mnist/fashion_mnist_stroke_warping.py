@@ -89,6 +89,9 @@ try:
 except:
     print('No such file or director: ./Augmented_Dataset/test')
 
+if os.path.isdir('./Augmented_Dataset') is False:
+    os.mkdir('./Augmented_Dataset')
+    
 # Training Dataset Augmentation
 stroke_warping(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_train, augment_sample_train_number)
@@ -195,7 +198,7 @@ if os.path.isdir('./Accuracy_Heatmap') is False:
     os.mkdir('./Accuracy_Heatmap')
 if os.path.isdir('./Accuracy_Heatmap/FashionMNIST') is False:
     os.mkdir('./Accuracy_Heatmap/FashionMNIST')
-    
+
 fig, ax = plt.subplots(1,1,igsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):
