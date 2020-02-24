@@ -197,7 +197,7 @@ with torch.no_grad():
 if os.path.isdir('./Accuracy_Heatmap') is False:
     os.mkdir('./Accuracy_Heatmap')
 
-fig, ax = plt.subplots(1,1,igsize=(8,6))
+fig, ax = plt.subplots(1,1,figsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):
     ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
