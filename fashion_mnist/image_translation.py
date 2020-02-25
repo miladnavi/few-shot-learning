@@ -49,7 +49,7 @@ augment_sample_train_number = 50
 augment_sample_test_number = 5000
 
 # %%
-def label_preserving_trasnformation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
+def image_translation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
         p = Augmentor.Pipeline(source_path + class_dir)
@@ -92,11 +92,11 @@ if os.path.isdir('./Augmented_Dataset') is False:
     os.mkdir('./Augmented_Dataset')
 
 # Training Dataset Augmentation
-label_preserving_trasnformation(
+image_translation(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_train, augment_sample_train_number)
 
 # Testting Dataset Augmentation
-label_preserving_trasnformation(
+image_translation(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_test, augment_sample_test_number)
 
 
@@ -186,8 +186,8 @@ with torch.no_grad():
         if label_of_prediction == labels.unique().data[0]:
             correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(
-        test_dataset_size, (correct / total) * 100))
+    # print ('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(test_dataset_size, (correct / total) * 100))
+
     print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
 
 # %%

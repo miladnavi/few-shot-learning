@@ -32,7 +32,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # %%
 
 # Uupack the dataset zip
-few_shot_sample_number = 5
+few_shot_sample_number = 10
 #unpack_zip_file('./Dataset/MNIST.tar.gz','./Few_Shot_Dataset', '/mnist_png', '/MNIST')
 
 # Create few-shot dataset
@@ -46,11 +46,11 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 5
+augment_sample_train_number = 50
 augment_sample_test_number = 5000
 
 # %%
-def label_preserving_trasnformation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
+def image_translation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
         p = Augmentor.Pipeline(source_path + class_dir)
@@ -94,11 +94,11 @@ if os.path.isdir('./Augmented_Dataset') is False:
 
 
 # Training Dataset
-label_preserving_trasnformation(
+image_translation(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_train, augment_sample_train_number)
 
 # Testting Dataset
-label_preserving_trasnformation(
+image_translation(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_test, augment_sample_test_number)
 
 
@@ -188,14 +188,16 @@ with torch.no_grad():
         if label_of_prediction == labels.unique().data[0]:
             correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(
-        test_dataset_size, (correct / total) * 100))
+    # print ('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(test_dataset_size, (correct / total) * 100))
+
     print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
 
 # %%
 # Save the plot
 if os.path.isdir('./Accuracy_Heatmap') is False:
     os.mkdir('./Accuracy_Heatmap')
+if os.path.isdir('./Accuracy_Heatmap/MNIST') is False:
+    os.mkdir('./Accuracy_Heatmap/MNIST')
 
 fig, ax = plt.subplots(1,1,figsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
@@ -205,7 +207,7 @@ for (i, j), z in np.ndenumerate(confusion_matrix):
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')
 plt.xticks(range(10), classes)
-plt.savefig('./Accuracy_Heatmap/fashion_mnist_ensemble_learning.png')
+plt.savefig('./Accuracy_Heatmap/MNIST/mnist_image_translation.png')
 
 # %%
 # Save the plot

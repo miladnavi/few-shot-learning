@@ -10,6 +10,10 @@ from bokeh.io import show
 from bokeh.models import LinearAxis, Range1d
 import numpy as np
 import mnist_cnn
+import matplotlib.pyplot as plt
+import os
+
+
 
 # %%
 # Hyperparameters
@@ -18,6 +22,8 @@ num_classes = 10
 train_batch_size = 5
 test_batch_size = 10
 learning_rate = 0.001
+classes = ('0', '1', '2', '3', '4',
+           '5', '6', '7', '8', '9')
 
 DATA_PATH = 'Data'
 MODEL_STORE_PATH = 'Model'
@@ -108,6 +114,7 @@ model.eval()
 with torch.no_grad():
     correct = 0
     total = 0
+    confusion_matrix = np.zeros([10,10], int)
     for images, labels in test_loader:
         images = images.to(device)
         labels = labels.to(device)
@@ -115,9 +122,27 @@ with torch.no_grad():
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
-
+        for i, l in enumerate(labels):
+            confusion_matrix[l.item(), predicted[i].item()] += 1 
     print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size,
                                                                           (correct / total) * 100))
+
+# %%
+# Save the plot
+if os.path.isdir('./Accuracy_Heatmap') is False:
+    os.mkdir('./Accuracy_Heatmap')
+if os.path.isdir('./Accuracy_Heatmap/MNIST') is False:
+    os.mkdir('./Accuracy_Heatmap/MNIST')
+
+fig, ax = plt.subplots(1,1,figsize=(8,6))
+ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
+for (i, j), z in np.ndenumerate(confusion_matrix):
+    ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
+# plt.ylabel('Actual Lable')
+plt.yticks(range(10), classes)
+plt.xlabel('Predicted Lable')
+plt.xticks(range(10), classes)
+plt.savefig('./Accuracy_Heatmap/MNIST/mnist_without_augmentation.png')
 
 # %%
 # Save the model

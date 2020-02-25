@@ -13,6 +13,7 @@ from bokeh.models import LinearAxis, Range1d
 import numpy as np
 import Augmentor
 import cifar_cnn
+import matplotlib.pyplot as plt
 
 
 # %%
@@ -22,7 +23,9 @@ num_classes = 10
 train_batch_size = 100
 test_batch_size = 10
 learning_rate = 0.001
+classes=('Airplane', 'Automobile', 'Bird', 'Cat', 'Deer', 'Dog', 'Frog', 'Horse', 'Ship', 'Truck')
 
+# Training onGPU when it is available otherwise CPU 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #%%
@@ -40,17 +43,14 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 150
-augment_sample_test_number = 5000
-
-def label_preserving_trasnformation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
+augment_sample_train_number = 100
+augment_sample_test_number = 10000
+#%%
+def elastic_distortion(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
         p = Augmentor.Pipeline(source_path + class_dir)
-        p.crop_random(probability=1, percentage_area=0.875)
-        p.resize(probability=1.0, width=32, height=32)
-        p.sample(sample_number)
-        p.flip_left_right(probability=1.0)
+        p.random_distortion(probability=1, magnitude=4, grid_height=8, grid_width=8)
         p.sample(sample_number)
 
     for class_dir in classes_dir:
@@ -68,15 +68,28 @@ def label_preserving_trasnformation(source_path, destination_path, classes_dir, 
         files = os.listdir(source_dir)
         for f in files:
             shutil.move(source_dir + f, destination_dir)
-    
+
     os.rmdir(source_dir)
 
+# Clean Augmented Dataset
+try:
+    shutil.rmtree('./Augmented_Dataset/train')
+except:
+    print('No such file or director: ./Augmented_Dataset/train')
+try:
+    shutil.rmtree('./Augmented_Dataset/test')
+except:
+    print('No such file or director: ./Augmented_Dataset/test')
+
+if os.path.isdir('./Augmented_Dataset') is False:
+    os.mkdir('./Augmented_Dataset')
+
 # Training Dataset
-label_preserving_trasnformation(
+elastic_distortion(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_train, augment_sample_train_number)
 
 # Testting Dataset
-label_preserving_trasnformation(
+elastic_distortion(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_test, augment_sample_test_number)
 
 
@@ -106,10 +119,8 @@ train_loader = DataLoader(dataset=train_dataset,
 test_loader = DataLoader(dataset=test_dataset,
                           batch_size=test_batch_size, shuffle=False)
 
-
 # %%
 model = cifar_cnn.ConvNet().to(device)
-
 
 # %%
 # Loss and optimizer
@@ -153,6 +164,7 @@ with torch.no_grad():
     correct = 0
     total = 0
     correct1 = 0
+    confusion_matrix = np.zeros([10,10], int)
     for images, labels in test_loader:
         images = images.to(device)
         labels = labels.to(device)
@@ -164,12 +176,29 @@ with torch.no_grad():
         transpose = torch.transpose(outputs.data, 0, 1)
         sum_of_tensor = torch.sum(transpose, 1)
         label_of_prediction = torch.argmax(sum_of_tensor, 0).item()
+        confusion_matrix[labels.unique().data[0], label_of_prediction] += 1 
         if label_of_prediction == labels.unique().data[0]:
             correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model without avraging on softmax layer on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))    
-    print('Test Accuracy of the model on the {} test images: {:.4f} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
+    #print('Test Accuracy of the model without avraging on softmax layer on the {} test images: {} %'.format( test_dataset_size, (correct / total) * 100))
+    print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
     
+# %%
+# Save the plot   
+if os.path.isdir('./Accuracy_Heatmap') is False:
+    os.mkdir('./Accuracy_Heatmap')
+if os.path.isdir('./Accuracy_Heatmap/CIFAR') is False:
+    os.mkdir('./Accuracy_Heatmap/CIFAR')
+fig, ax = plt.subplots(1,1,figsize=(8,6))
+ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
+for (i, j), z in np.ndenumerate(confusion_matrix):
+    ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
+# plt.ylabel('Actual Lable')
+plt.yticks(range(10), classes)
+plt.xlabel('Predicted Lable')
+plt.xticks(range(10), classes)
+plt.savefig('./Accuracy_Heatmap/CIFAR/cifar_elastic_distortion.png')
+
 # %%
 # Save the plot
 p = figure(width=850, y_range=(0, 1))

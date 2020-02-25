@@ -77,7 +77,6 @@ class discriminator(nn.Module):
         utils.initialize_weights(self)
 
     def forward(self, input):
-        print(input.shape)
 
         x = self.conv(input)
         x = x.view(-1, 128 * (self.input_height // 4) * (self.input_width // 4))

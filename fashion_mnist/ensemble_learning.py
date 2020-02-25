@@ -210,8 +210,8 @@ with torch.no_grad():
         if label_of_prediction == labels.unique().data[0]:
             correct1 += 1
         correct += (predicted == labels).sum().item()
-    print('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(
-        test_dataset_size, (correct / total) * 100))
+    # print ('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(test_dataset_size, (correct / total) * 100))
+
     print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
 
 # %%
