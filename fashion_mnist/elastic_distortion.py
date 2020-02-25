@@ -1,5 +1,4 @@
 # %%
-from data_cleaner import few_shot_dataset
 import glob
 import os
 import shutil
@@ -14,7 +13,9 @@ from bokeh.models import LinearAxis, Range1d
 import numpy as np
 import fashion_mnist_cnn
 import Augmentor
+from data_cleaner import few_shot_dataset
 import matplotlib.pyplot as plt
+
 
 # %%
 # Hyperparameters
@@ -26,17 +27,15 @@ learning_rate = 0.001
 classes = ('T-Shirt', 'Trouser', 'Pullover', 'Dress', 'Coat',
            'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle Boot')
 
-# Training onGPU when it is available otherwise CPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# %%
 
-# Uupack the dataset zip
+#%%
 few_shot_sample_number = 10
 # Create few-shot dataset
 #few_shot_dataset(few_shot_sample_number)
 
-# %%
+#%%
 classes_dir = ['/0', '/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9']
 
 few_shot_source_path = './Few_Shot_Dataset/FashionMNIST'
@@ -44,21 +43,15 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 50
+augment_sample_train_number = 100
 augment_sample_test_number = 10000
 
-# %%
-
-
-def stroke_warping(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
+#%%
+def elastic_distortion(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
         p = Augmentor.Pipeline(source_path + class_dir)
-        p.skew_left_right(probability=1, magnitude=0.25)
-        p.skew_top_bottom(probability=1, magnitude=0.25)
-        p.skew_corner(probability=1, magnitude=0.25)
-        p.shear(probability=1.0, max_shear_left=6, max_shear_right=6)
-        p.rotate(probability=1.0, max_left_rotation=6, max_right_rotation=6)
+        p.random_distortion(probability=1, magnitude=2, grid_height=4, grid_width=4)
         p.sample(sample_number)
 
     for class_dir in classes_dir:
@@ -72,12 +65,13 @@ def stroke_warping(source_path, destination_path, classes_dir, output_dir, datas
             os.mkdir(destination_dir)
         except:
             print("Dir exists")
-
+        
         files = os.listdir(source_dir)
         for f in files:
             shutil.move(source_dir + f, destination_dir)
-
+    
     os.rmdir(source_dir)
+
 
 # Clean Augmented Dataset
 try:
@@ -92,22 +86,22 @@ except:
 if os.path.isdir('./Augmented_Dataset') is False:
     os.mkdir('./Augmented_Dataset')
 
-# Training Dataset Augmentation
-stroke_warping(
+# Training Dataset
+elastic_distortion(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_train, augment_sample_train_number)
 
-# Testting Dataset Augmentation
-stroke_warping(
+# Testting Dataset
+elastic_distortion(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_test, augment_sample_test_number)
 
 
 # %%
 # transforms to apply to the data
 trans = transforms.Compose(
-    [transforms.Grayscale(num_output_channels=1),
+    [transforms.Grayscale(num_output_channels= 1),
         transforms.ToTensor()])
 
-#Fashion MNIST dataset
+# FashionMNIST dataset
 train_dataset = torchvision.datasets.ImageFolder(
     root='./Augmented_Dataset/train', transform=trans)
 
@@ -125,7 +119,7 @@ print('Testing dataset size: {}' .format(test_dataset_size))
 train_loader = DataLoader(dataset=train_dataset,
                           batch_size=train_batch_size, shuffle=True)
 test_loader = DataLoader(dataset=test_dataset,
-                         batch_size=test_batch_size, shuffle=False)
+                          batch_size=test_batch_size, shuffle=False)
 
 # %%
 model = fashion_mnist_cnn.ConvNet().to(device)
@@ -189,9 +183,8 @@ with torch.no_grad():
         correct += (predicted == labels).sum().item()
     print('Test Accuracy of the model without avraging softmax layer on the {} test images: {} %'.format(
         test_dataset_size, (correct / total) * 100))
-    print('Test Accuracy of the model on the {} test images: {} %'.format(
-        test_dataset_size, (correct1/test_dataset_size) * 1000))
-
+    print('Test Accuracy of the model on the {} test images: {} %'.format(test_dataset_size, (correct1/test_dataset_size) * 1000))
+    
 # %%
 # Save the plot
 if os.path.isdir('./Accuracy_Heatmap') is False:
@@ -203,11 +196,12 @@ fig, ax = plt.subplots(1,1,figsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):
     ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
-plt.ylabel('Actual Lable')
+# plt.ylabel('Actual Lable')
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')
 plt.xticks(range(10), classes)
-plt.savefig('./Accuracy_Heatmap/FashionMNIST/fashion_mnist_storke_wraping.png')
+plt.savefig('./Accuracy_Heatmap/FashionMNIST/fashion_mnist_elastic_distortion.png')
+    
 # %%
 # Save the plot
 p = figure(width=850, y_range=(0, 1))
@@ -217,3 +211,5 @@ p.line(np.arange(len(loss_list)), loss_list)
 p.line(np.arange(len(loss_list)), np.array(acc_list)
        * 100, y_range_name='Accuracy', color='red')
 show(p)
+    
+

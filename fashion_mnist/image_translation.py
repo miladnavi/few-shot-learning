@@ -45,7 +45,7 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 20
+augment_sample_train_number = 50
 augment_sample_test_number = 5000
 
 # %%
@@ -200,7 +200,7 @@ fig, ax = plt.subplots(1,1,figsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=1000, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):
     ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
-plt.ylabel('Actual Lable')
+# plt.ylabel('Actual Lable')
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')
 plt.xticks(range(10), classes)
