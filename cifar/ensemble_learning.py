@@ -65,22 +65,22 @@ def augmentation(source_path, destination_path, classes_dir, output_dir, dataset
     for class_dir in classes_dir:
         if technique_determination[class_dir] == 'translation':
             p = Augmentor.Pipeline(source_path + class_dir)
-            p.crop_random(probability=1, percentage_area=0.8)
-            p.resize(probability=1.0, width=28, height=28)
-            p.sample(sample_number/2)
+            p.crop_random(probability=1, percentage_area=0.875)
+            p.resize(probability=1.0, width=32, height=32)
+            p.sample(int(sample_number/2))
             p.flip_left_right(probability=1.0)
-            p.sample(sample_number/2)
+            p.sample(int(sample_number/2))
         elif technique_determination[class_dir] == 'elastic':
             p = Augmentor.Pipeline(source_path + class_dir)
-            p.random_distortion(probability=1, magnitude=2, grid_height=4, grid_width=4)
+            p.random_distortion(probability=1, magnitude=4, grid_height=8, grid_width=8)
             p.sample(sample_number)
         elif technique_determination[class_dir] == 'stroke':
             p = Augmentor.Pipeline(source_path + class_dir)
             p.skew_left_right(probability=1, magnitude=0.25)
             p.skew_top_bottom(probability=1, magnitude=0.25)
             p.skew_corner(probability=1, magnitude=0.25)
-            p.shear(probability=1.0, max_shear_left=6, max_shear_right=6)
-            p.rotate(probability=1.0, max_left_rotation=6, max_right_rotation=6)
+            p.shear(probability=1.0, max_shear_left=6 , max_shear_right=6)
+            p.rotate(probability= 1.0, max_left_rotation=6, max_right_rotation=6)
             p.sample(sample_number)
 
     for class_dir in classes_dir:
