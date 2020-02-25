@@ -23,7 +23,7 @@ num_classes = 10
 train_batch_size = 100
 test_batch_size = 10
 learning_rate = 0.001
-classes=('Airplane', 'Automobile', 'Bird', 'Cat', 'Deer', 'Dog', 'Frog', 'Horse', 'Ship', 'Truck')
+classes=('Airplane', 'Car', 'Bird', 'Cat', 'Deer', 'Dog', 'Frog', 'Horse', 'Ship', 'Truck')
 
 # Training onGPU when it is available otherwise CPU 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

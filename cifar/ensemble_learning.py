@@ -43,18 +43,45 @@ augmented_destination_path = './Augmented_Dataset'
 output_dir = '/output/'
 dataset_kind_train = '/train'
 dataset_kind_test = '/test'
-augment_sample_train_number = 50
-augment_sample_test_number = 5000
+augment_sample_train_number = 100
+augment_sample_test_number = 10000
 
-def image_translation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
+#%%
+technique_determination = {
+    '/0': 'stroke',
+    '/1': 'translation',
+    '/2': 'elastic',
+    '/3': 'elastic',
+    '/4': 'elastic',
+    '/5': 'translation',
+    '/6': 'stroke',
+    '/7': 'stroke',
+    '/8': 'translation',
+    '/9': 'elastic',
+}
+
+def augmentation(source_path, destination_path, classes_dir, output_dir, dataset_kind, sample_number):
     source_path = source_path + dataset_kind
     for class_dir in classes_dir:
-        p = Augmentor.Pipeline(source_path + class_dir)
-        p.crop_random(probability=1, percentage_area=0.875)
-        p.resize(probability=1.0, width=32, height=32)
-        p.sample(sample_number)
-        p.flip_left_right(probability=1.0)
-        p.sample(sample_number)
+        if technique_determination[class_dir] == 'translation':
+            p = Augmentor.Pipeline(source_path + class_dir)
+            p.crop_random(probability=1, percentage_area=0.8)
+            p.resize(probability=1.0, width=28, height=28)
+            p.sample(sample_number/2)
+            p.flip_left_right(probability=1.0)
+            p.sample(sample_number/2)
+        elif technique_determination[class_dir] == 'elastic':
+            p = Augmentor.Pipeline(source_path + class_dir)
+            p.random_distortion(probability=1, magnitude=2, grid_height=4, grid_width=4)
+            p.sample(sample_number)
+        elif technique_determination[class_dir] == 'stroke':
+            p = Augmentor.Pipeline(source_path + class_dir)
+            p.skew_left_right(probability=1, magnitude=0.25)
+            p.skew_top_bottom(probability=1, magnitude=0.25)
+            p.skew_corner(probability=1, magnitude=0.25)
+            p.shear(probability=1.0, max_shear_left=6, max_shear_right=6)
+            p.rotate(probability=1.0, max_left_rotation=6, max_right_rotation=6)
+            p.sample(sample_number)
 
     for class_dir in classes_dir:
         source_dir = source_path + class_dir + output_dir
@@ -74,6 +101,7 @@ def image_translation(source_path, destination_path, classes_dir, output_dir, da
     
     os.rmdir(source_dir)
 
+
 # Clean Augmented Dataset
 try:
     shutil.rmtree('./Augmented_Dataset/train')
@@ -88,11 +116,11 @@ if os.path.isdir('./Augmented_Dataset') is False:
     os.mkdir('./Augmented_Dataset')
 
 # Training Dataset
-image_translation(
+augmentation(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_train, augment_sample_train_number)
 
 # Testting Dataset
-image_translation(
+augmentation(
     few_shot_source_path, augmented_destination_path, classes_dir, output_dir, dataset_kind_test, augment_sample_test_number)
 
 
@@ -202,7 +230,7 @@ for (i, j), z in np.ndenumerate(confusion_matrix):
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')
 plt.xticks(range(10), classes)
-plt.savefig('./Accuracy_Heatmap/CIFAR/cifar_image_translation.png')
+plt.savefig('./Accuracy_Heatmap/CIFAR/cifar_ensemble_learning.png')
 
 # %%
 # Save the plot
