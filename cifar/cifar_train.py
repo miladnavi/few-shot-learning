@@ -9,6 +9,8 @@ from bokeh.io import show
 from bokeh.models import LinearAxis, Range1d
 import numpy as np
 import cifar_cnn
+import matplotlib.pyplot as plt
+
 
 # %%
 # Hyperparameters
@@ -16,6 +18,7 @@ num_epochs = 20
 num_classes = 10
 batch_size = 100
 learning_rate = 0.001
+classes=('Airplane', 'Car', 'Bird', 'Cat', 'Deer', 'Dog', 'Frog', 'Horse', 'Ship', 'Truck')
 
 DATA_PATH = 'Data'
 MODEL_STORE_PATH = 'Model'
@@ -39,7 +42,7 @@ test_dataset = torchvision.datasets.CIFAR10(
 # Data size
 train_dataset_size = len(train_dataset)
 test_dataset_size = len(test_dataset)
-print('Tarining dataset size: {}' .format(train_dataset_size))
+print('Training dataset size: {}' .format(train_dataset_size))
 print('Testing dataset size: {}' .format(test_dataset_size))
 
 # %%
@@ -95,6 +98,7 @@ model.eval()
 with torch.no_grad():
     correct = 0
     total = 0
+    confusion_matrix = np.zeros([10,10], int)
     for images, labels in test_loader:
         images = images.to(device)
         labels = labels.to(device)
@@ -102,10 +106,27 @@ with torch.no_grad():
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
-
+        for i, l in enumerate(labels):
+            confusion_matrix[l.item(), predicted[i].item()] += 1 
     print('Test Accuracy of the model on the 10000 test images: {} %'.format(
         (correct / total) * 100))
 
+
+# %%
+# Save the plot   
+if os.path.isdir('./Accuracy_Heatmap') is False:
+    os.mkdir('./Accuracy_Heatmap')
+if os.path.isdir('./Accuracy_Heatmap/CIFAR') is False:
+    os.mkdir('./Accuracy_Heatmap/CIFAR')
+fig, ax = plt.subplots(1,1,figsize=(8,6))
+ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=100, cmap=plt.get_cmap('Blues'))
+for (i, j), z in np.ndenumerate(confusion_matrix):
+    ax.text(j, i, format((z/100), '.2%'), ha='center', va='center')
+# plt.ylabel('Actual Lable')
+plt.yticks(range(10), classes)
+plt.xlabel('Predicted Lable')
+plt.xticks(range(10), classes)
+plt.savefig('./Accuracy_Heatmap/CIFAR/cifar_original_data.png')
 # %%
 # Save the model
 #torch.save(model.state_dict(), MODEL_STORE_PATH + 'conv_net_model.ckpt')
