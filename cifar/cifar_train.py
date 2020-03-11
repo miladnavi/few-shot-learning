@@ -1,4 +1,7 @@
 # %%
+import glob
+import os
+import shutil
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -14,7 +17,7 @@ import matplotlib.pyplot as plt
 
 # %%
 # Hyperparameters
-num_epochs = 20 
+num_epochs = 15 
 num_classes = 10
 batch_size = 100
 learning_rate = 0.001
@@ -121,7 +124,7 @@ if os.path.isdir('./Accuracy_Heatmap/CIFAR') is False:
 fig, ax = plt.subplots(1,1,figsize=(8,6))
 ax.matshow(confusion_matrix, aspect='auto', vmin=0, vmax=100, cmap=plt.get_cmap('Blues'))
 for (i, j), z in np.ndenumerate(confusion_matrix):
-    ax.text(j, i, format((z/100), '.2%'), ha='center', va='center')
+    ax.text(j, i, format((z/1000), '.2%'), ha='center', va='center')
 # plt.ylabel('Actual Lable')
 plt.yticks(range(10), classes)
 plt.xlabel('Predicted Lable')

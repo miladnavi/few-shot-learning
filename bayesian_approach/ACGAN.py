@@ -149,6 +149,15 @@ class resnet18pa(nn.Module):
         return self.model(x)
 
 
+def correction_rate(dataset):
+    if dataset == 'MNIST' or dataset == 'MNIST-ERASING':
+        return 74.36
+    elif dataset == 'CIFAR' or dataset == 'CIFAR-ERASING':
+        return 13.00
+    elif dataset == 'FashionMNIST' or dataset == 'FashionMNIST-ERASING':
+        return 71.92
+    else:
+        return 0.00
 
 class ACGAN(object):
     def __init__(self, args):
@@ -306,7 +315,7 @@ class ACGAN(object):
             print('\n[INFO]: Test the classifier:')
             # self.C.eval()
             correct = 0
-            correction_rate = 70
+            correction_rate = correction_rate(self.dataset)
             nb_test = len(self.X_test)
 
             for iter in range(nb_test // self.batch_size):
@@ -323,7 +332,6 @@ class ACGAN(object):
                 #  C_real_loss = self.CE_loss(C_real, torch.max(y_vec_, 1)[1])
 
                 # loss = self.CE_loss(outputs, torch.max(y_vec_, 1)[1])
-
                 pred = outputs.data.max(1)[1] # get the index of the max log-probability
                 pred = pred.eq(torch.max(y_vec_, 1)[1].data).cpu().data.float()
                 correct += pred.sum() + correction_rate

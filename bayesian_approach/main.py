@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument('--gan_type', type=str, default='ACGAN',
                         choices=['GAN', 'CGAN', 'infoGAN', 'ACGAN', 'EBGAN', 'BEGAN', 'WGAN', 'WGAN_GP', 'DRAGAN', 'LSGAN'],
                         help='The type of GAN')#, required=True)
-    parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR', 'FashionMNIST'],
+    parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'CIFAR', 'FashionMNIST', 'MNIST-ERASING', 'CIFAR-ERASING', 'FashionMNIST-ERASING'],
                         help='The name of dataset')
     parser.add_argument('--epoch', type=int, default=100, help='The number of epochs to run')
     parser.add_argument('--batch_size', type=int, default=100, help='The size of batch')

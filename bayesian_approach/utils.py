@@ -20,13 +20,18 @@ trans = transforms.Compose(
 
 
 def load_mnist(dataset):
-
-    # Load data
-    train_path = '../Few_Shot_Dataset/' + dataset + '/train'
-    test_path = '../Few_Shot_Dataset/' + dataset + '/test'
-
-    print('Train Path (%s )' %(train_path))
-    print('Test Path (%s )' %(test_path))
+    if dataset == 'MNIST' or dataset == 'CIFAR' or dataset == 'FashionMNIST':
+        # Load data
+        train_path = '../Few_Shot_Dataset/' + dataset + '/train'
+        test_path = '../Few_Shot_Dataset/' + dataset + '/test'
+        print('Train Path (%s )' %(train_path))
+        print('Test Path (%s )' %(test_path))
+    else:
+        # Load data
+        train_path = '../Augmented_Dataset/train'
+        test_path = '../Augmented_Dataset/test'
+        print('Train Path (%s )' %(train_path))
+        print('Test Path (%s )' %(test_path))
 
     train_loader_all = datasets.ImageFolder(
         root=train_path, transform=trans)

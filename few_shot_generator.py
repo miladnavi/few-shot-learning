@@ -1,4 +1,3 @@
-# python main.py --dataset mnist --gan_type ACGAN --epoch 50 --batch_size 100
 import argparse, os
 
 
@@ -20,7 +19,7 @@ def few_shot_dataset_mnist(number_of_sample):
     custom_dir_name = '/MNIST'
     source_path = './Few_Shot_Dataset/MNIST'
 
-    #Unpaking data-set zip file 
+    #Unpacking data-set zip file 
     tf = tarfile.open(source_path_unzip)
     tf.extractall(destination_path)
     os.rename(destination_path + real_dir_name, destination_path + custom_dir_name)
@@ -183,7 +182,7 @@ def check_args(args):
     try:
         assert args.number_of_sample >= 1
     except:
-        print('number of smaples must be larger than or equal to one')
+        print('number of samples must be larger than or equal to one')
 
     # --batch_size
     try:
@@ -200,7 +199,6 @@ def main():
     if args is None:
         exit()
 
-        # declare instance for GAN
     if args.dataset == 'mnist':
         few_shot_dataset_mnist(args.number_of_sample)
     elif args.dataset == 'fashion_mnist':
