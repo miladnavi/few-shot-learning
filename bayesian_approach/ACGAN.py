@@ -149,16 +149,6 @@ class resnet18pa(nn.Module):
         return self.model(x)
 
 
-def correction_rate(dataset):
-    if dataset == 'MNIST' or dataset == 'MNIST-ERASING':
-        return 74.36
-    elif dataset == 'CIFAR' or dataset == 'CIFAR-ERASING':
-        return 13.00
-    elif dataset == 'FashionMNIST' or dataset == 'FashionMNIST-ERASING':
-        return 71.92
-    else:
-        return 0.00
-
 class ACGAN(object):
     def __init__(self, args):
         # parameters
@@ -315,7 +305,7 @@ class ACGAN(object):
             print('\n[INFO]: Test the classifier:')
             # self.C.eval()
             correct = 0
-            correction_rate = correction_rate(self.dataset)
+            correction_rate = self.correction(self.dataset)
             nb_test = len(self.X_test)
 
             for iter in range(nb_test // self.batch_size):
@@ -352,6 +342,16 @@ class ACGAN(object):
         utils.generate_animation(self.result_dir + '/' + self.dataset + '/' + self.model_name + '/' + self.model_name,
                                  self.epoch)
         utils.loss_plot(self.train_hist, os.path.join(self.save_dir, self.dataset, self.model_name), self.model_name)
+    
+    def correction_rate(self, dataset):
+        if dataset == 'MNIST' or dataset == 'MNIST-ERASING':
+            return 74.36
+        elif dataset == 'CIFAR' or dataset == 'CIFAR-ERASING':
+            return 13.00
+        elif dataset == 'FashionMNIST' or dataset == 'FashionMNIST-ERASING':
+            return 71.92
+        else:
+            return 0.00
 
     def visualize_results(self, epoch, fix=True):
         self.G.eval()
