@@ -11,16 +11,13 @@ Bachelor of Science (B.Sc.).
 
 
 ## Component
-------
 - [PyTorch](https://pytorch.org/)
 - [Augmentor](https://github.com/mdbloice/Augmentor)
 - [Bayesian Approach](https://github.com/toantm/pytorch-bda)
 
 ## Installation
-------
 ```python
 pip install requirements.txt
 ```
 
 ## Usage
-------
