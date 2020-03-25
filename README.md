@@ -24,15 +24,14 @@ pip install requirements.txt
 
 This project consists of following parts:
 
-- Data Augmentation
-    - Label Preserving Transformations
-        - Image Translations
-        - Elastic Distortions
-        - Stroke Warping
-        - Ensemble Learning & Label Preserving Transformations
-        - Color Randomization & Ensemble Learning
-    - Bayesian Approach
-        - Random Erasing & Bayesian Approach
+- Label Preserving Transformations
+    - Image Translations
+    - Elastic Distortions
+    - Stroke Warping
+    - Ensemble Learning & Label Preserving Transformations
+    - Color Randomization & Ensemble Learning
+- Bayesian Approach
+    - Random Erasing & Bayesian Approach
 
 All above mentioned parts are available for following datasets:
 
